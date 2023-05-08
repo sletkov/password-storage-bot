@@ -40,19 +40,6 @@ func (s *Storage) Set(ctx context.Context, service *models.Service) error {
 	return nil
 }
 
-// IsExist checks if service exists in db
-func (s *Storage) IsExist(ctx context.Context, service *models.Service) (bool, error) {
-	q := `SELECT COUNT(*) FROM services WHERE user_name = ? AND service_name = ?`
-
-	var count int
-
-	if err := s.db.QueryRowContext(ctx, q, service.UserName, service.ServiceName).Scan(&count); err != nil {
-		return false, fmt.Errorf("can't check if service exists: %w", err)
-	}
-
-	return count > 0, nil
-}
-
 // Get gets login and password of service from db
 func (s *Storage) Get(ctx context.Context, userName, serviceName string) (*models.Service, error) {
 	q := `SELECT (login, password) FROM services  WHERE user_name = ? AND  service_name = ?`
@@ -80,15 +67,41 @@ func (s *Storage) Get(ctx context.Context, userName, serviceName string) (*model
 	}, nil
 }
 
+// Update rewrites login and password for current service
+func (s *Storage) Update(ctx context.Context, service *models.Service, newLogin, newPassword string) error {
+	q := `UPDATE services SET login = ?, password = ? WHERE user_name = ? AND service_name = ?`
+
+	_, err := s.db.ExecContext(ctx, q, newLogin, newPassword, service.UserName, service.ServiceName)
+
+	if err != nil {
+		return fmt.Errorf("can't update data: %w ", err)
+	}
+
+	return nil
+}
+
 // Delete deletes service row
-func (s *Storage) Delete(ctx context.Context, service *models.Service) error {
+func (s *Storage) Delete(ctx context.Context, userName, serviceName string) error {
 	q := `DELETE * FROM services WHERE user_name = ? AND  service_name = ?`
 
-	_, err := s.db.ExecContext(ctx, q, service.UserName, service.ServiceName)
+	_, err := s.db.ExecContext(ctx, q, userName, serviceName)
 
 	if err != nil {
 		return fmt.Errorf("can't delete data: %w ", err)
 	}
 
 	return nil
+}
+
+// IsExists checks if service exists in db
+func (s *Storage) IsExists(ctx context.Context, service *models.Service) (bool, error) {
+	q := `SELECT COUNT(*) FROM services WHERE user_name = ? AND service_name = ?`
+
+	var count int
+
+	if err := s.db.QueryRowContext(ctx, q, service.UserName, service.ServiceName).Scan(&count); err != nil {
+		return false, fmt.Errorf("can't check if service exists: %w", err)
+	}
+
+	return count > 0, nil
 }
