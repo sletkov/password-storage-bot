@@ -20,5 +20,5 @@ const (
 )
 
 func buildGetMessage(serviceName, login, password string) string {
-	return fmt.Sprintf("Service: %s \n Login: %s \n Password: %s", serviceName, login, password)
+	return fmt.Sprintf("Service: %s \nLogin: %s \nPassword: %s", serviceName, login, password)
 }

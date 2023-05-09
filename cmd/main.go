@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/joho/godotenv"
 	"log"
 	"os"
 	tgClient "password-storage-bot/internal/app/clients/telegram"
@@ -10,6 +11,13 @@ import (
 )
 
 const batchSize = 100
+
+func init() {
+	// Loads variables from .env
+	if err := godotenv.Load(); err != nil {
+		log.Print("No .env file found")
+	}
+}
 
 func main() {
 	s, err := postgres.New(os.Getenv("DATABASE_URL"))

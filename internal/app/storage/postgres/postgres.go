@@ -29,7 +29,7 @@ func New(databaseUrl string) (*Storage, error) {
 
 // Set adds service row into db
 func (s *Storage) Set(ctx context.Context, service *models.Service) error {
-	q := `INSERT INTO services (user_name, service_name, login, password) VALUES (?, ?, ?, ?)`
+	q := `INSERT INTO services (user_name, service_name, login, password) VALUES ($1, $2, $3, $4)`
 
 	_, err := s.db.ExecContext(ctx, q, service.UserName, service.ServiceName, service.Login, service.Password)
 
@@ -42,7 +42,7 @@ func (s *Storage) Set(ctx context.Context, service *models.Service) error {
 
 // Get gets login and password of service from db
 func (s *Storage) Get(ctx context.Context, userName, serviceName string) (*models.Service, error) {
-	q := `SELECT (login, password) FROM services  WHERE user_name = ? AND  service_name = ?`
+	q := `SELECT login, password FROM services WHERE user_name = $1 AND service_name = $2`
 
 	var (
 		login    string
@@ -56,7 +56,7 @@ func (s *Storage) Get(ctx context.Context, userName, serviceName string) (*model
 	}
 
 	if err != nil {
-		return nil, fmt.Errorf("can't get service %s to user %s: %w", userName, serviceName, err)
+		return nil, fmt.Errorf("can't get service %s to user %s: %w", serviceName, userName, err)
 	}
 
 	return &models.Service{
@@ -69,7 +69,7 @@ func (s *Storage) Get(ctx context.Context, userName, serviceName string) (*model
 
 // Update rewrites login and password for current service
 func (s *Storage) Update(ctx context.Context, service *models.Service, newLogin, newPassword string) error {
-	q := `UPDATE services SET login = ?, password = ? WHERE user_name = ? AND service_name = ?`
+	q := `UPDATE services SET login = $1, password = $2 WHERE user_name = $3 AND service_name = $4`
 
 	_, err := s.db.ExecContext(ctx, q, newLogin, newPassword, service.UserName, service.ServiceName)
 
@@ -82,7 +82,7 @@ func (s *Storage) Update(ctx context.Context, service *models.Service, newLogin,
 
 // Delete deletes service row
 func (s *Storage) Delete(ctx context.Context, userName, serviceName string) error {
-	q := `DELETE * FROM services WHERE user_name = ? AND  service_name = ?`
+	q := `DELETE FROM services WHERE user_name = $1 AND  service_name = $2`
 
 	_, err := s.db.ExecContext(ctx, q, userName, serviceName)
 
@@ -95,7 +95,7 @@ func (s *Storage) Delete(ctx context.Context, userName, serviceName string) erro
 
 // IsExists checks if service exists in db
 func (s *Storage) IsExists(ctx context.Context, service *models.Service) (bool, error) {
-	q := `SELECT COUNT(*) FROM services WHERE user_name = ? AND service_name = ?`
+	q := `SELECT COUNT(*) FROM services WHERE user_name = $1 AND service_name = $2`
 
 	var count int
 

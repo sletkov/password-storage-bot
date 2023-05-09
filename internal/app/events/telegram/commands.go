@@ -77,7 +77,7 @@ func (p *Processor) saveService(chatID int, userName, serviceName, login, passwo
 		Password:    password,
 	}
 
-	isExists, err := p.storage.IsExists(context.Background(), service)
+	isExists, _ := p.storage.IsExists(context.Background(), service)
 	if err != nil {
 		return err
 	}
@@ -121,7 +121,7 @@ func (p *Processor) getService(chatID int, userName, serviceName string) (err er
 }
 
 func (p *Processor) deleteService(chatID int, userName, serviceName string) (err error) {
-	defer func() { err = e.WrapIfErr("can't do command: get service", err) }()
+	defer func() { err = e.WrapIfErr("can't do command: delete service", err) }()
 	if err := p.storage.Delete(context.Background(), userName, serviceName); err != nil {
 		return err
 	}
