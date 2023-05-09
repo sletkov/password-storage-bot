@@ -25,7 +25,7 @@ func (p *Processor) doCmd(text string, chatID, messageID int, userName string) e
 	command := command(text)
 	splitedText := strings.Split(text, " ")
 
-	log.Printf("got new command: '%s' from '%s", text, userName)
+	log.Printf("got new command: '%s' from '%s'", text, userName)
 
 	switch command {
 	case SetCmd:
