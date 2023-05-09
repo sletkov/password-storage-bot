@@ -30,6 +30,22 @@ func main() {
 		s,
 	)
 
+	//// Delete messages logic
+	//bot, err := tgbotapi.NewBotAPI(os.Getenv("TG_BOT_TOKEN"))
+	//if err != nil {
+	//	log.Fatal("can't create botApi: ", err)
+	//}
+	//
+	//delegeMsg := tgbotapi.DeleteMessageConfig{
+	//	ChatID:    chatID,
+	//	MessageID: messageId,
+	//}
+	//
+	//_, err = bot.DeleteMessage(deleteMsg)
+	//if err != nil {
+	//	log.Println(err)
+	//}
+
 	log.Print("bot started")
 
 	consumer := event_consumer.New(eventsProcessor, eventsProcessor, batchSize)

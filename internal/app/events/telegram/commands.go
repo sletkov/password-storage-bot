@@ -8,6 +8,7 @@ import (
 	"password-storage-bot/internal/app/storage"
 	e "password-storage-bot/pkg/lib"
 	"strings"
+	"time"
 )
 
 const (
@@ -18,14 +19,13 @@ const (
 	StartCmd  = "/start"
 )
 
-func (p *Processor) doCmd(text string, chatID int, userName string) error {
+func (p *Processor) doCmd(text string, chatID, messageID int, userName string) error {
 	text = strings.TrimSpace(text)
 
 	command := command(text)
 	splitedText := strings.Split(text, " ")
 
-	//delete after
-	log.Printf("got new command '%s' from '%s", text, userName)
+	log.Printf("got new command: '%s' from '%s", text, userName)
 
 	switch command {
 	case SetCmd:
@@ -33,15 +33,24 @@ func (p *Processor) doCmd(text string, chatID int, userName string) error {
 			serviceName := splitedText[1]
 			login := splitedText[2]
 			password := splitedText[3]
+			go func() {
+				time.Sleep(1 * time.Minute)
+				p.tg.DeleteMessage(chatID, messageID)
+			}()
 			return p.saveService(chatID, userName, serviceName, login, password)
 		}
 		return p.tg.SendMessage(chatID, msgUnknownCommand)
 	case GetCmd:
 		if len(splitedText) == 2 {
 			serviceName := splitedText[1]
+			go func() {
+				time.Sleep(1 * time.Minute)
+				p.tg.DeleteMessage(chatID, messageID+1)
+			}()
 			return p.getService(chatID, userName, serviceName)
 		}
 		return p.tg.SendMessage(chatID, msgUnknownCommand)
+
 	case DeleteCmd:
 		if len(splitedText) == 2 {
 			serviceName := splitedText[1]
@@ -120,8 +129,16 @@ func (p *Processor) getService(chatID int, userName, serviceName string) (err er
 	return p.tg.SendMessage(chatID, msg)
 }
 
+// TODO : ADD existing check
 func (p *Processor) deleteService(chatID int, userName, serviceName string) (err error) {
 	defer func() { err = e.WrapIfErr("can't do command: delete service", err) }()
+
+	_, err = p.storage.Get(context.Background(), userName, serviceName)
+
+	if errors.Is(err, storage.ErrNoService) {
+		return p.tg.SendMessage(chatID, msgNoService)
+	}
+
 	if err := p.storage.Delete(context.Background(), userName, serviceName); err != nil {
 		return err
 	}

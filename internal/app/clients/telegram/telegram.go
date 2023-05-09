@@ -17,8 +17,9 @@ type Client struct {
 }
 
 const (
-	getUpdatesMethod  = "getUpdates"
-	sendMessageMethod = "sendMessage"
+	getUpdatesMethod    = "getUpdates"
+	sendMessageMethod   = "sendMessage"
+	deleteMessageMethod = "deleteMessage"
 )
 
 func New(host string, token string) *Client {
@@ -62,6 +63,19 @@ func (c *Client) SendMessage(chatID int, text string) error {
 	_, err := c.doRequest(sendMessageMethod, q)
 	if err != nil {
 		return e.Wrap("can't send message", err)
+	}
+
+	return nil
+}
+
+func (c *Client) DeleteMessage(chatID, messageID int) error {
+	q := url.Values{}
+	q.Add("chat_id", strconv.Itoa(chatID))
+	q.Add("message_id", strconv.Itoa(messageID))
+
+	_, err := c.doRequest(deleteMessageMethod, q)
+	if err != nil {
+		return e.Wrap("can't delete message", err)
 	}
 
 	return nil
