@@ -1,0 +1,30 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:alpine
+    environment:
+      - POSTGRES_USER=sletkov
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=service_storage
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    volumes:
+      - postgres-db:/var/lib/postgresql/data
+  tg_bot:
+    depends_on:
+      - db
+    build: .
+    environment:
+      - "TG_BOT_HOST=api.telegram.org"
+      - "TG_BOT_TOKEN=6128053926:AAG5MU4Vy_GP2szg-nLZJ86PrqYo86qxgiI"
+      - "DATABASE_URL=postgresql://sletkov:postgres@db:5432/service_storage?sslmode=disable"
+    volumes:
+      - .:/usr/src/app
+
+volumes:
+  postgres-db:
